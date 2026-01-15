@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La roue de la fortune</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 50%, #6C5B7B 100%);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            margin-bottom: 30px;
+            font-size: 3em;
+            animation: rainbow 3s infinite;
+        }
+
+        @keyframes rainbow {
+            0% { color: #FFD700; }
+            25% { color: #FF69B4; }
+            50% { color: #00CED1; }
+            75% { color: #FFD700; }
+            100% { color: #FFD700; }
+        }
+
+        .container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+        }
+
+        /* Flèche indicatrice */
+        .pointer {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 35px solid #FFD700;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            z-index: 100;
+        }
+
+        /* Engrenage extérieur */
+        .gear {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .gear-outer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        /* Dents de l'engrenage */
+        .tooth {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%);
+            top: 50%;
+            left: 50%;
+            transform-origin: center;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .tooth:nth-child(1) { transform: translate(-50%, -50%) rotate(0deg) translateY(-130px); }
+        .tooth:nth-child(2) { transform: translate(-50%, -50%) rotate(45deg) translateY(-130px); }
+        .tooth:nth-child(3) { transform: translate(-50%, -50%) rotate(90deg) translateY(-130px); }
+        .tooth:nth-child(4) { transform: translate(-50%, -50%) rotate(135deg) translateY(-130px); }
+        .tooth:nth-child(5) { transform: translate(-50%, -50%) rotate(180deg) translateY(-130px); }
+        .tooth:nth-child(6) { transform: translate(-50%, -50%) rotate(225deg) translateY(-130px); }
+        .tooth:nth-child(7) { transform: translate(-50%, -50%) rotate(270deg) translateY(-130px); }
+        .tooth:nth-child(8) { transform: translate(-50%, -50%) rotate(315deg) translateY(-130px); }
+
+        /* Disque central de la roue */
+        .wheel-center {
+            position: absolute;
+            width: 238px;
+            height: 238px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 
+                inset 0 0 40px rgba(0,0,0,0.3),
+                0 5px 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        /* Sections de la roue */
+        .section {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-origin: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            clip-path: polygon(50% 50%, 100% 0%, 100% 100%);
+        }
+
+        .section:nth-child(1) {
+            background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+            color: #fff;
+            transform: rotate(0deg);
+        }
+
+        .section:nth-child(2) {
+            background: linear-gradient(135deg, #00CED1 0%, #20B2AA 100%);
+            color: #fff;
+            transform: rotate(90deg);
+        }
+
+        .section:nth-child(3) {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #fff;
+            transform: rotate(180deg);
+        }
+
+        .section:nth-child(4) {
+            background: linear-gradient(135deg, #9370DB 0%, #8A2BE2 100%);
+            color: #fff;
+            transform: rotate(270deg);
+        }
+
+        /* Texte dans les sections */
+        .section-text {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 15px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+
+        .section:nth-child(1) .section-text {
+            transform: translateX(-50%) rotate(0deg);
+        }
+
+        .section:nth-child(2) .section-text {
+            transform: translateX(-50%) rotate(-90deg);
+        }
+
+        .section:nth-child(3) .section-text {
+            transform: translateX(-50%) rotate(-180deg);
+        }
+
+        .section:nth-child(4) .section-text {
+            transform: translateX(-50%) rotate(-270deg);
+        }
+
+        /* Centre de la roue (moyeu) */
+        .hub {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700, #FF69B4);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            border: 4px solid #fff;
+            z-index: 10;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .hub:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 8px 30px rgba(255,215,0,0.8);
+        }
+
+        .hub:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        .hub-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            line-height: 1.2;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Bouton */
+        button {
+            padding: 15px 40px;
+            font-size: 20px;
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #d4af37 0%, #8b6914 100%);
+            color: #2c1810;
+            border: 3px solid #6b5638;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Résultat */
+        .result {
+            margin-top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            min-height: 40px;
+            text-align: center;
+        }
+
+        .winner {
+            animation: celebrate 0.8s ease-in-out;
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            20% { transform: scale(1.3) rotate(5deg); opacity: 1; }
+            40% { transform: scale(0.9) rotate(-3deg); }
+            60% { transform: scale(1.2) rotate(2deg); }
+            80% { transform: scale(0.95) rotate(-1deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        /* Confettis */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Fou médiéval */
+        .jester {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 120px;
+            z-index: 999;
+            opacity: 0;
+            transition: all 0.5s;
+        }
+
+        .jester.dancing {
+            opacity: 1;
+            animation: dance 0.3s infinite;
+        }
+
+        @keyframes dance {
+            0% { transform: rotate(-15deg) scale(1); }
+            10% { transform: rotate(15deg) scale(1.2); }
+            20% { transform: rotate(-15deg) scale(0.9); }
+            30% { transform: rotate(20deg) scale(1.15); }
+            40% { transform: rotate(-20deg) scale(0.95); }
+            50% { transform: rotate(0deg) scale(1.3); }
+            60% { transform: rotate(15deg) scale(1.1); }
+            70% { transform: rotate(-15deg) scale(0.9); }
+            80% { transform: rotate(10deg) scale(1.2); }
+            90% { transform: rotate(-10deg) scale(1); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎪 La roue de la fortune 🎪</h1>
+    
+    <div class="jester" id="jester">🤹</div>
+    
+    <div class="container">
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            
+            <div class="gear" id="wheel">
+                <div class="gear-outer">
+                    <div class="tooth"></div>
+                    <div class="tooth"></div>
+                    <div class="tooth"></div>
+                    <div class="tooth"></div>
+                    <div class="tooth"></div>
+                    <div class="tooth"></div>
+                    <div class="tooth"></div>
+                    <div class="tooth"></div>
+                </div>
+                
+                <div class="wheel-center">
+                    <div class="section">
+                        <span class="section-text">Arthur</span>
+                    </div>
+                    <div class="section">
+                        <span class="section-text">Raphael</span>
+                    </div>
+                    <div class="section">
+                        <span class="section-text">Amandine</span>
+                    </div>
+                    <div class="section">
+                        <span class="section-text">Eiko</span>
+                    </div>
+                </div>
+                
+                <div class="hub" id="spinButton">
+                    <span class="hub-text">Tourner</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const wheel = document.getElementById('wheel');
+        const spinButton = document.getElementById('spinButton');
+        const resultDiv = document.getElementById('result');
+        const jester = document.getElementById('jester');
+        
+        const names = ['Arthur', 'Raphael', 'Amandine', 'Eiko'];
+        let isSpinning = false;
+        let currentRotation = 0;
+
+        spinButton.addEventListener('click', spinWheel);
+
+        function createConfetti() {
+            const colors = ['#FFD700', '#FF69B4', '#00CED1', '#9370DB', '#FF1493', '#FFA500', '#00FF00', '#FF0000'];
+            for (let i = 0; i < 200; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    const duration = 2 + Math.random() * 3;
+                    confetti.style.animation = `confetti-fall ${duration}s linear forwards`;
+                    confetti.style.animationDelay = Math.random() * 0.3 + 's';
+                    confetti.style.width = (5 + Math.random() * 10) + 'px';
+                    confetti.style.height = (5 + Math.random() * 10) + 'px';
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), duration * 1000 + 500);
+                }, i * 20);
+            }
+        }
+
+        function showJester() {
+            jester.classList.add('dancing');
+            setTimeout(() => {
+                jester.classList.remove('dancing');
+            }, 5000);
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            resultDiv.textContent = '';
+            resultDiv.classList.remove('winner');
+            
+            // Nombre de tours complets (8 à 12 tours pour plus de suspense!)
+            const spins = 8 + Math.floor(Math.random() * 5);
+            
+            // Angle supplémentaire pour l'arrêt (0-360)
+            const extraDegrees = Math.floor(Math.random() * 360);
+            
+            // Calcul de la rotation totale
+            const totalRotation = currentRotation + (spins * 360) + extraDegrees;
+            
+            // Appliquer la rotation
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            currentRotation = totalRotation;
+            
+            // Calculer le gagnant (la flèche pointe vers le haut)
+            // On normalise l'angle final entre 0 et 360
+            const finalAngle = totalRotation % 360;
+            
+            // Chaque section fait 90 degrés
+            // La flèche pointe vers le haut (0°)
+            // On inverse car la roue tourne dans le sens horaire
+            const normalizedAngle = (360 - finalAngle) % 360;
+            
+            let winnerIndex;
+            if (normalizedAngle >= 0 && normalizedAngle < 90) {
+                winnerIndex = 0; // Arthur
+            } else if (normalizedAngle >= 90 && normalizedAngle < 180) {
+                winnerIndex = 3; // Eiko
+            } else if (normalizedAngle >= 180 && normalizedAngle < 270) {
+                winnerIndex = 2; // Amandine
+            } else {
+                winnerIndex = 1; // Raphael
+            }
+            
+            // Afficher le résultat après l'animation
+            setTimeout(() => {
+                resultDiv.textContent = `🎉 ${names[winnerIndex]} ! 🎉`;
+                resultDiv.classList.add('winner');
+                createConfetti();
+                showJester();
+                isSpinning = false;
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
